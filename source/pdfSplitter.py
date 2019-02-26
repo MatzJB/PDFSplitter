@@ -1,8 +1,6 @@
 from PyPDF2 import PdfFileWriter, PdfFileReader
-
-import os
 import argparse
-
+import os 
 parser = argparse.ArgumentParser(
     description='Split PDF file into several PDFs. This version supports splitting into ranges', formatter_class=argparse.HelpFormatter)
 parser.add_argument("-i", "--inputPDF",
@@ -27,10 +25,19 @@ verbose = args['verbose']
 pageRanges = pageRange.split(',')
 
 outputDir = os.path.abspath(outputDir)
+
 if verbose:
     print '\n\nSplit PDF {} into {}'.format(filename, outputDir)
 
 inputpdf = PdfFileReader(open(filename, "rb"))
+numPages = inputpdf.getNumPages()
+
+if verbose:
+    print 'number of pages: {}'.format(numPages)
+
+if 'all' in pageRange:
+    pageRanges = [str(i) + '-' + str(i) for i in range(1, numPages+1)]
+
 for i, pageRange in enumerate(pageRanges):
     rangeParts = pageRange.split('-')
     rangeStart = int(rangeParts[0])-1
@@ -42,10 +49,10 @@ for i, pageRange in enumerate(pageRanges):
         currentPage.compressContentStreams()
         output.addPage(currentPage)
         if verbose:
-            print ' adding page {}'.format(page+1)
+            print '\nadding page {}'.format(page+1)
         outputPDFFilename = outputDir + os.sep + \
-            'document-page {}.pdf'.format(i)
+            'document-page {}.pdf'.format(i+1)
     with open(outputPDFFilename, 'wb') as outputStream:
         if verbose:
-            print '\nWriting to file', outputPDFFilename+':'
+            print 'writing to file', outputPDFFilename + ':'
         output.write(outputStream)
